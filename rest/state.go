@@ -1,6 +1,8 @@
 package rest
 
-import "errors"
+import (
+	"errors"
+)
 
 // DELETE
 
@@ -22,7 +24,11 @@ func PostEvent(auth *IMain, eventType string, payload string) (interface{}, erro
 	return comPost(auth, "api/events/"+eventType, payload)
 }
 
-func PostTemplate(auth *IMain, eventType string, payload string) (interface{}, error) {
+func PostIntentHandle(auth *IMain, payload string) (interface{}, error) {
+	return comPost(auth, "api/intent/handle", payload)
+}
+
+func PostTemplate(auth *IMain, payload string) (interface{}, error) {
 	return comPost(auth, "api/template", payload)
 }
 
@@ -44,14 +50,14 @@ func GetServices(auth *IMain) (interface{}, error) {
 	return comGet(auth, "api/services")
 }
 
-func GetCalendar(auth *IMain, entity string) (interface{}, error) {
+func GetCalendars(auth *IMain) (interface{}, error) {
 	return comGet(auth, "api/calendars")
 }
 
-func GetErrorLog(auth *IMain, entity string) (interface{}, error) {
+func GetErrorLog(auth *IMain) (interface{}, error) {
 	return comGet(auth, "api/error_log")
 }
 
-func GetEvents(auth *IMain, entity string) (interface{}, error) {
+func GetEvents(auth *IMain) (interface{}, error) {
 	return comGet(auth, "api/events")
 }

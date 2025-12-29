@@ -9,7 +9,7 @@ func PostCheckConfig(auth *IMain) (interface{}, error) {
 }
 
 func GetApi(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api")
+	return comGet(auth, "api/")
 }
 
 func GetComponents(auth *IMain) (interface{}, error) {
