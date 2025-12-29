@@ -1,0 +1,19 @@
+# Secrets
+.env
+.env.*
+*.secret
+
+# Go
+/bin/
+/build/
+*.exe
+*.out
+*.test
+
+# JetBrains
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
