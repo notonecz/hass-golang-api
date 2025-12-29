@@ -33,9 +33,9 @@ func getProtocol(secure bool) string {
 	return "http"
 }
 
-func comGet(auth *IMain, endpoint string, secure bool) ([]byte, error) {
+func comGet(auth *IMain, endpoint string) ([]byte, error) {
 
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(secure), auth.ip, endpoint)
+	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -45,8 +45,8 @@ func comGet(auth *IMain, endpoint string, secure bool) ([]byte, error) {
 	return com(req, auth.token)
 }
 
-func comPost(auth *IMain, endpoint string, payload string, secure bool) ([]byte, error) {
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(secure), auth.ip, endpoint)
+func comPost(auth *IMain, endpoint string, payload string) ([]byte, error) {
+	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
