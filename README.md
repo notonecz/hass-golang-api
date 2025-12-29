@@ -1,5 +1,5 @@
 
-# Home Assistan Golang API
+# Home Assistant Golang API
 
 ## Generate hass-services
 
