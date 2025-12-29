@@ -2,6 +2,7 @@ package rest
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -33,8 +34,7 @@ func getProtocol(secure bool) string {
 	return "http"
 }
 
-func comGet(auth *IMain, endpoint string) ([]byte, error) {
-
+func comGet(auth *IMain, endpoint string) (interface{}, error) {
 	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -45,7 +45,18 @@ func comGet(auth *IMain, endpoint string) ([]byte, error) {
 	return com(req, auth.token)
 }
 
-func comPost(auth *IMain, endpoint string, payload string) ([]byte, error) {
+func comDelete(auth *IMain, endpoint string) (interface{}, error) {
+	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return com(req, auth.token)
+}
+
+func comPost(auth *IMain, endpoint string, payload string) (interface{}, error) {
 	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(payload)))
@@ -56,7 +67,7 @@ func comPost(auth *IMain, endpoint string, payload string) ([]byte, error) {
 	return com(req, auth.token)
 }
 
-func com(req *http.Request, token string) ([]byte, error) {
+func com(req *http.Request, token string) (interface{}, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
 
@@ -77,5 +88,10 @@ func com(req *http.Request, token string) ([]byte, error) {
 		return nil, errBody
 	}
 
-	return body, nil
+	var result interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	return result, nil
 }
