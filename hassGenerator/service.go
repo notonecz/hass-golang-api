@@ -143,18 +143,20 @@ func GenerateServiceFile(auth *rest.IMain) error {
 }
 
 func upppreConver(s string) string {
-	return upperConverter(s, "_")
+	return upperConverter(s, []string{"_"})
 }
 
-func upperConverter(s string, separator string) string {
-	parts := strings.Split(s, separator)
+func upperConverter(s string, separators []string) string {
+	for _, sep := range separators {
+		s = strings.ReplaceAll(s, sep, " ")
+	}
+
+	parts := strings.Fields(s)
 
 	for i, part := range parts {
-		if len(part) > 0 {
-			runes := []rune(part)
-			runes[0] = unicode.ToUpper(runes[0])
-			parts[i] = string(runes)
-		}
+		r := []rune(part)
+		r[0] = unicode.ToUpper(r[0])
+		parts[i] = string(r)
 	}
 
 	return strings.Join(parts, "")

@@ -37,8 +37,7 @@ func GenerateEntityFolders(auth *rest.IMain) error {
 			goType := mapJSONTypeToGo(value)
 			builder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n",
 				normalize(
-					upperConverter(
-						upppreConver(key), " ")),
+					upperConverter(key, []string{"_", " "})),
 				goType, key),
 			)
 		}
