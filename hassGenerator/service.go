@@ -10,20 +10,20 @@ import (
 	"github.com/notonecz/hass-golang-api/rest"
 )
 
-func GenerateServiceFile(auth *rest.IMain, instance string) error {
+func GenerateServiceFile(auth *rest.IMain) error {
 	services, err := rest.GetServices(auth)
 	if err != nil {
-		return fmt.Errorf("failed to get services: %w", err)
+		return err
 	}
 
 	servicesSlice, ok := services.([]interface{})
 	if !ok {
-		return fmt.Errorf("unexpected services type: %T", services)
+		return err
 	}
 
 	var builder strings.Builder
 
-	builder.WriteString("package " + instance + "\n\n")
+	builder.WriteString("package " + auth.Id + "\n\n")
 	builder.WriteString("import \"github.com/notonecz/hass-golang-api/rest\"\n\n")
 
 	builder.WriteString("type Domain string\n\nconst (\n")
@@ -122,12 +122,12 @@ func GenerateServiceFile(auth *rest.IMain, instance string) error {
 
 	}
 
-	if err := os.MkdirAll(instance, 0755); err != nil {
-		return fmt.Errorf("failed to create directory: %w", err)
+	if err := os.MkdirAll(auth.Id, 0755); err != nil {
+		return err
 	}
-	filePath := filepath.Join(instance, "hass_services.go")
+	filePath := filepath.Join(auth.Id, "hass_services.go")
 	if err := os.WriteFile(filePath, []byte(builder.String()), 0644); err != nil {
-		return fmt.Errorf("failed to write file: %w", err)
+		return err
 	}
 	fmt.Printf("Generated file in %s\n", filePath)
 	return nil
@@ -145,4 +145,9 @@ func upppreConver(s string) string {
 	}
 
 	return strings.Join(parts, "")
+}
+
+func selectEntityType(s string) (string, string) {
+	parts := strings.Split(s, ".")
+	return parts[0], parts[1]
 }

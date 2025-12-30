@@ -1,63 +1,55 @@
 package rest
 
-import (
-	"errors"
-)
-
 // DELETE
 
-func DeleteState(auth *IMain, entity string) (interface{}, error) {
-	return comDelete(auth, "api/states/"+entity)
+func DeleteState[T any](auth *IMain, entity string) (T, error) {
+	return comDelete[T](auth, "api/states/"+entity)
 }
 
 // POST
 
-func PostService(auth *IMain, domain string, service string, payload interface{}) (interface{}, error) {
-	return IcomPost(auth, "api/services/"+domain+"/"+service, payload)
+func PostService[T any](auth *IMain, domain string, service string, payload interface{}) (T, error) {
+	return IcomPost[T](auth, "api/services/"+domain+"/"+service, payload)
 }
 
-func PostState(auth *IMain, entity string, payload string) (interface{}, error) {
-	return comPost(auth, "api/states/"+entity, payload)
+func PostState[T any](auth *IMain, entity string, payload string) (T, error) {
+	return comPost[T](auth, "api/states/"+entity, payload)
 }
 
-func PostEvent(auth *IMain, eventType string, payload string) (interface{}, error) {
-	return comPost(auth, "api/events/"+eventType, payload)
+func PostEvent[T any](auth *IMain, eventType string, payload string) (T, error) {
+	return comPost[T](auth, "api/events/"+eventType, payload)
 }
 
-func PostIntentHandle(auth *IMain, payload string) (interface{}, error) {
-	return comPost(auth, "api/intent/handle", payload)
+func PostIntentHandle[T any](auth *IMain, payload string) (T, error) {
+	return comPost[T](auth, "api/intent/handle", payload)
 }
 
-func PostTemplate(auth *IMain, payload string) (interface{}, error) {
-	return comPost(auth, "api/template", payload)
+func PostTemplate[T any](auth *IMain, payload string) (T, error) {
+	return comPost[T](auth, "api/template", payload)
 }
 
 // GET
 
-func GetState(auth *IMain, entity string) (interface{}, error) {
-	if entity != "" {
-		return comGet(auth, "api/states/"+entity)
-	} else {
-		return nil, errors.New("no defined entity")
-	}
+func GetState[T any](auth *IMain, entity string) (T, error) {
+	return comGet[T](auth, "api/states/"+entity)
 }
 
-func GetStates(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api/states")
+func GetStates(auth *IMain) ([]Entity[map[string]interface{}], error) {
+	return comGet[[]Entity[map[string]interface{}]](auth, "api/states")
 }
 
 func GetServices(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api/services")
+	return comGet[interface{}](auth, "api/services")
 }
 
 func GetCalendars(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api/calendars")
+	return comGet[interface{}](auth, "api/calendars")
 }
 
 func GetErrorLog(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api/error_log")
+	return comGet[interface{}](auth, "api/error_log")
 }
 
 func GetEvents(auth *IMain) (interface{}, error) {
-	return comGet(auth, "api/events")
+	return comGet[interface{}](auth, "api/events")
 }
