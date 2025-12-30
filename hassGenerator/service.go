@@ -117,7 +117,7 @@ func GenerateServiceFile(auth *rest.IMain) error {
 		funcName := "Post" + domainPrefix + "Service"
 
 		builder.WriteString(fmt.Sprintf("func %s(auth *rest.IMain, service %s, payload interface{}) (interface{}, error) {\n", funcName, typeName))
-		builder.WriteString(fmt.Sprintf("\treturn rest.PostService(auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
+		builder.WriteString(fmt.Sprintf("\treturn rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
 		builder.WriteString("}\n\n")
 
 	}
