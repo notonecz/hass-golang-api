@@ -93,6 +93,6 @@ func GetConfig(auth *IMain) (interface{}, error)
 ### MORE ON https://developers.home-assistant.io/docs/api/rest
 
 ## About project
-### Websocket suppor
+### Websocket support
 
 I plan to add websocket support, currently only REST API is available
