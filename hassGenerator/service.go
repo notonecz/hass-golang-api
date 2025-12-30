@@ -11,6 +11,9 @@ import (
 )
 
 func GenerateServiceFile(auth *rest.IMain) error {
+
+	fmt.Println("Generating service file...")
+
 	services, err := rest.GetServices(auth)
 	if err != nil {
 		return err
@@ -69,7 +72,7 @@ func GenerateServiceFile(auth *rest.IMain) error {
 		}
 
 		domainPrefix := upppreConver(domainName)
-		typeName := domainPrefix + "Service"
+		typeName := "I" + domainPrefix + "Service"
 
 		builder.WriteString(fmt.Sprintf("type %s string\n\n", typeName))
 		builder.WriteString(fmt.Sprintf("func (s %s) String() string { return string(s) }\n\n", typeName))
@@ -114,10 +117,16 @@ func GenerateServiceFile(auth *rest.IMain) error {
 			builder.WriteString("}\n\n")
 		}
 
-		funcName := "Post" + domainPrefix + "Service"
+		funcName := domainPrefix + "Service"
 
 		builder.WriteString(fmt.Sprintf("func %s(auth *rest.IMain, service %s, payload interface{}) (interface{}, error) {\n", funcName, typeName))
 		builder.WriteString(fmt.Sprintf("\treturn rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
+		builder.WriteString("}\n\n")
+
+		builder.WriteString(fmt.Sprintf("func P%s(auth *rest.IMain, service %s, payload interface{}) interface{} {\n", funcName, typeName))
+		builder.WriteString(fmt.Sprintf("\tcon, err := rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
+		builder.WriteString(fmt.Sprintf("\tif err != nil {panic(err)}\n"))
+		builder.WriteString("\treturn con\n")
 		builder.WriteString("}\n\n")
 
 	}
@@ -129,7 +138,7 @@ func GenerateServiceFile(auth *rest.IMain) error {
 	if err := os.WriteFile(filePath, []byte(builder.String()), 0644); err != nil {
 		return err
 	}
-	fmt.Printf("Generated file in %s\n", filePath)
+	fmt.Printf("Service file generated in %s\n", filePath)
 	return nil
 }
 

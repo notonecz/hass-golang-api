@@ -48,12 +48,18 @@ func GenerateEntityFolders(auth *rest.IMain) error {
 		builder.WriteString("\n")
 		builder.WriteString("type E" + entitySelectorConverted + " rest.Entity[S" + entitySelectorConverted + "]\n\n")
 		builder.WriteString("func Get" + entitySelectorConverted + "(auth *rest.IMain) (E" + entitySelectorConverted + ", error) {\n")
-		builder.WriteString("\t return rest.GetState[E" + entitySelectorConverted + "](auth, " + entitySelectorConverted + ") \n}\n")
+		builder.WriteString("\t return rest.GetState[E" + entitySelectorConverted + "](auth, " + entitySelectorConverted + ") \n}\n\n")
+
+		builder.WriteString("func PGet" + entitySelectorConverted + "(auth *rest.IMain) E" + entitySelectorConverted + " {\n")
+		builder.WriteString("\t con, err := rest.GetState[E" + entitySelectorConverted + "](auth, " + entitySelectorConverted + ") \n")
+		builder.WriteString("\t if err != nil {panic(err)}\n")
+		builder.WriteString("\t return con\n}\n")
 
 		filePath := filepath.Join(entityTypeConverted, entitySelectorConverted+".go")
 		if err := os.WriteFile(filePath, []byte(builder.String()), 0644); err != nil {
 			return fmt.Errorf("failed to write file %s: %w", filePath, err)
 		}
+		fmt.Printf("Entity generated in %s\n", filePath)
 	}
 
 	return nil
