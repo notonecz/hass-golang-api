@@ -123,7 +123,7 @@ func GenerateServiceFile(auth *rest.IMain) error {
 		builder.WriteString(fmt.Sprintf("\treturn rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
 		builder.WriteString("}\n\n")
 
-		builder.WriteString(fmt.Sprintf("func P%s(auth *rest.IMain, service %s, payload interface{}) interface{} {\n", funcName, typeName))
+		builder.WriteString(fmt.Sprintf("func X%s(auth *rest.IMain, service %s, payload interface{}) interface{} {\n", funcName, typeName))
 		builder.WriteString(fmt.Sprintf("\tcon, err := rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
 		builder.WriteString(fmt.Sprintf("\tif err != nil {panic(err)}\n"))
 		builder.WriteString("\treturn con\n")
@@ -143,7 +143,11 @@ func GenerateServiceFile(auth *rest.IMain) error {
 }
 
 func upppreConver(s string) string {
-	parts := strings.Split(s, "_")
+	return upperConverter(s, "_")
+}
+
+func upperConverter(s string, separator string) string {
+	parts := strings.Split(s, separator)
 
 	for i, part := range parts {
 		if len(part) > 0 {
@@ -154,6 +158,21 @@ func upppreConver(s string) string {
 	}
 
 	return strings.Join(parts, "")
+}
+
+func normalize(s string) string {
+
+	s = strings.Replace(s, "_", "", -1)
+	s = strings.Replace(s, "-", "", -1)
+	s = strings.Replace(s, ":", "", -1)
+	s = strings.Replace(s, "+", "", -1)
+
+	r := []rune(s)
+	if unicode.IsDigit(r[0]) {
+		s = "N" + s
+	}
+
+	return s
 }
 
 func selectEntityType(s string) (string, string) {

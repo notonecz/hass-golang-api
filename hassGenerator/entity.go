@@ -36,22 +36,25 @@ func GenerateEntityFolders(auth *rest.IMain) error {
 		for key, value := range entityItem.Attributes {
 			goType := mapJSONTypeToGo(value)
 			builder.WriteString(fmt.Sprintf("\t%s %s `json:\"%s\"`\n",
-				upppreConver(key), goType, key))
+				normalize(
+					upperConverter(
+						upppreConver(key), " ")),
+				goType, key),
+			)
 		}
 
 		builder.WriteString("}\n\n")
 
 		builder.WriteString("const ")
-
-		builder.WriteString(fmt.Sprintf("%s = \"%s.%s\"\n", entitySelectorConverted, entityType, entitySelector))
+		builder.WriteString(fmt.Sprintf("%s = \"%s.%s\"\n", normalize(entitySelectorConverted), entityType, entitySelector))
 
 		builder.WriteString("\n")
 		builder.WriteString("type E" + entitySelectorConverted + " rest.Entity[S" + entitySelectorConverted + "]\n\n")
 		builder.WriteString("func Get" + entitySelectorConverted + "(auth *rest.IMain) (E" + entitySelectorConverted + ", error) {\n")
-		builder.WriteString("\t return rest.GetState[E" + entitySelectorConverted + "](auth, " + entitySelectorConverted + ") \n}\n\n")
+		builder.WriteString("\t return rest.GetState[E" + entitySelectorConverted + "](auth, " + normalize(entitySelectorConverted) + ") \n}\n\n")
 
-		builder.WriteString("func PGet" + entitySelectorConverted + "(auth *rest.IMain) E" + entitySelectorConverted + " {\n")
-		builder.WriteString("\t con, err := rest.GetState[E" + entitySelectorConverted + "](auth, " + entitySelectorConverted + ") \n")
+		builder.WriteString("func Get" + entitySelectorConverted + "X(auth *rest.IMain) E" + entitySelectorConverted + " {\n")
+		builder.WriteString("\t con, err := rest.GetState[E" + entitySelectorConverted + "](auth, " + normalize(entitySelectorConverted) + ") \n")
 		builder.WriteString("\t if err != nil {panic(err)}\n")
 		builder.WriteString("\t return con\n}\n")
 
