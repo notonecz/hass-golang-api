@@ -4,12 +4,12 @@ import "github.com/notonecz/hass-golang-api/rest"
 
 func Generate(auth *rest.IMain) error {
 
-	err := GenerateServiceFile(auth)
+	err := generateServiceFile(auth)
 	if err != nil {
 		return err
 	}
 
-	err2 := GenerateEntityFolders(auth)
+	err2 := generateEntityFolders(auth)
 	if err2 != nil {
 		return err2
 	}
@@ -20,12 +20,12 @@ func Generate(auth *rest.IMain) error {
 
 func GenerateX(auth *rest.IMain) {
 
-	err := GenerateServiceFile(auth)
+	err := generateServiceFile(auth)
 	if err != nil {
 		panic(err)
 	}
 
-	err2 := GenerateEntityFolders(auth)
+	err2 := generateEntityFolders(auth)
 	if err2 != nil {
 		panic(err2)
 	}

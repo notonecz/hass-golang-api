@@ -9,7 +9,7 @@ import (
 	"github.com/notonecz/hass-golang-api/rest"
 )
 
-func GenerateEntityFolders(auth *rest.IMain) error {
+func generateEntityFolders(auth *rest.IMain) error {
 	if err := os.Chdir(auth.Id); err != nil {
 		return fmt.Errorf("failed to change directory to %s: %w", auth.Id, err)
 	}

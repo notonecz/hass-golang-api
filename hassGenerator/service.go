@@ -10,7 +10,7 @@ import (
 	"github.com/notonecz/hass-golang-api/rest"
 )
 
-func GenerateServiceFile(auth *rest.IMain) error {
+func generateServiceFile(auth *rest.IMain) error {
 
 	fmt.Println("Generating service file...")
 
