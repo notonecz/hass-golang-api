@@ -12,8 +12,8 @@ func DeleteState(auth *IMain, entity string) (interface{}, error) {
 
 // POST
 
-func PostService(auth *IMain, domain string, service string, payload string) (interface{}, error) {
-	return comPost(auth, "api/services/"+domain+"/"+service, payload)
+func PostService(auth *IMain, domain string, service string, payload interface{}) (interface{}, error) {
+	return IcomPost(auth, "api/services/"+domain+"/"+service, payload)
 }
 
 func PostState(auth *IMain, entity string, payload string) (interface{}, error) {

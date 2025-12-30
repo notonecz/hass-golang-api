@@ -67,6 +67,22 @@ func comPost(auth *IMain, endpoint string, payload string) (interface{}, error) 
 	return com(req, auth.token)
 }
 
+func IcomPost(auth *IMain, endpoint string, payload interface{}) (interface{}, error) {
+	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	return com(req, auth.token)
+}
+
 func com(req *http.Request, token string) (interface{}, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json")
