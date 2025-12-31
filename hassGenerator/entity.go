@@ -53,11 +53,9 @@ func generateEntityFolders(auth *rest.IMain) error {
 		builder.WriteString("\t return rest.GetState[E" + entitySelectorConverted + "](auth, " + normalize(entitySelectorConverted) + ") \n}\n\n")
 
 		builder.WriteString("func Get" + entitySelectorConverted + "X(auth *rest.IMain) E" + entitySelectorConverted + " {\n")
-		builder.WriteString("\t con, err := rest.GetState[E" + entitySelectorConverted + "](auth, " + normalize(entitySelectorConverted) + ") \n")
-		builder.WriteString("\t if err != nil {panic(err)}\n")
-		builder.WriteString("\t return con\n}\n")
+		builder.WriteString("\t return rest.GetStateX[E" + entitySelectorConverted + "](auth, " + normalize(entitySelectorConverted) + ") \n}\n\n")
 
-		filePath := filepath.Join(entityTypeConverted, entitySelectorConverted+".go")
+		filePath := filepath.Join(entityTypeConverted, "ENTITY_"+entitySelectorConverted+".go")
 		if err := os.WriteFile(filePath, []byte(builder.String()), 0644); err != nil {
 			return fmt.Errorf("failed to write file %s: %w", filePath, err)
 		}
@@ -80,6 +78,7 @@ func mapJSONTypeToGo(value interface{}) string {
 	case []interface{}:
 		return "[]interface{}"
 	default:
+		fmt.Printf("Unsupported type: %T\n", value)
 		return "interface{}"
 	}
 }

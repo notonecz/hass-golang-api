@@ -10,135 +10,144 @@ import (
 	"github.com/notonecz/hass-golang-api/rest"
 )
 
-func generateServiceFile(auth *rest.IMain) error {
+func generateServiceFiles(auth *rest.IMain) error {
 
 	fmt.Println("Generating service file...")
+
+	if err := os.RemoveAll(auth.Id); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if err := os.MkdirAll(auth.Id, 0755); err != nil {
+		return err
+	}
+
+	err := os.Chdir(auth.Id)
+	if err != nil {
+		return err
+	}
 
 	services, err := rest.GetServices(auth)
 	if err != nil {
 		return err
 	}
 
-	servicesSlice, ok := services.([]interface{})
-	if !ok {
+	err = generateDomainFile(auth, services)
+	if err != nil {
 		return err
 	}
 
-	var builder strings.Builder
-
-	builder.WriteString("package " + auth.Id + "\n\n")
-	builder.WriteString("import \"github.com/notonecz/hass-golang-api/rest\"\n\n")
-
-	builder.WriteString("type Domain string\n\nconst (\n")
-
 	domainConstNames := make(map[string]string)
 
-	for _, domainItem := range servicesSlice {
-		domainMap, ok := domainItem.(map[string]interface{})
-		if !ok {
-			continue
+	for _, domainItem := range services {
+
+		domainPrefix := upppreConver(domainItem.Domain)
+
+		err = os.Mkdir(domainPrefix, 0755)
+		if err != nil {
+			return err
 		}
 
-		domainName, ok := domainMap["domain"].(string)
+		var builder strings.Builder
 
-		if !ok {
-			continue
-		}
+		builder.WriteString("package " + domainPrefix + "\n\n")
+		builder.WriteString("import \"github.com/notonecz/hass-golang-api/rest\"\n\n")
 
-		constName := upppreConver(domainName)
+		domainConstName := "C" + domainPrefix + "Domain"
+		domainConstNames[domainItem.Domain] = domainConstName
 
-		domainConstNames[domainName] = constName
-		builder.WriteString(fmt.Sprintf("\t%s Domain = %q\n", constName, domainName))
+		builder.WriteString("type Domain string\n\nconst (\n")
 
-	}
+		builder.WriteString(fmt.Sprintf("\t%s Domain = \"%s\"\n)\n\n", domainConstName, domainItem.Domain))
 
-	builder.WriteString(")\n\n")
-	builder.WriteString("type Service interface {\n\tString() string\n}\n\n")
-
-	for _, domainItem := range servicesSlice {
-		domainMap, ok := domainItem.(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		domainName, ok := domainMap["domain"].(string)
-		if !ok {
-			continue
-		}
-
-		servicesMap, ok := domainMap["services"].(map[string]interface{})
-		if !ok {
-			continue
-		}
-
-		domainPrefix := upppreConver(domainName)
 		typeName := "I" + domainPrefix + "Service"
 
 		builder.WriteString(fmt.Sprintf("type %s string\n\n", typeName))
 		builder.WriteString(fmt.Sprintf("func (s %s) String() string { return string(s) }\n\n", typeName))
 		builder.WriteString("const (\n")
 
-		for serviceName := range servicesMap {
-
-			baseConstName := domainPrefix + upppreConver(serviceName)
+		for serviceName := range domainItem.Services {
+			baseConstName := upppreConver(serviceName)
 			builder.WriteString(fmt.Sprintf("\t%s %s = %q\n", baseConstName, typeName, serviceName))
-
 		}
 
 		builder.WriteString(")\n\n")
 
-		for serviceName, serviceRaw := range servicesMap {
+		for serviceName, service := range domainItem.Services {
 
-			serviceMap, ok := serviceRaw.(map[string]interface{})
-			if !ok {
-				continue
-			}
-
-			payloadName := domainPrefix + upppreConver(serviceName) + "Payload"
+			payloadName := upppreConver(serviceName) + "Payload"
 			builder.WriteString(fmt.Sprintf("type %s struct {\n", payloadName))
 
-			if fieldsRaw, ok := serviceMap["fields"].(map[string]interface{}); ok {
-				for fieldName := range fieldsRaw {
-					goField := upppreConver(fieldName)
-					builder.WriteString(fmt.Sprintf(
-						"\t%s interface{} `json:\"%s,omitempty\"`\n",
-						goField,
-						fieldName,
-					))
+			for fieldName := range service.Fields {
+				if fieldName == "entity_id" {
+					continue
 				}
+				goField := upppreConver(fieldName)
+				builder.WriteString(fmt.Sprintf(
+					"\t%s interface{} `json:\"%s,omitempty\"`\n",
+					goField,
+					fieldName,
+				))
+
 			}
 
-			if _, ok := serviceMap["target"]; ok {
-				builder.WriteString(
-					"\tEntityID string `json:\"entity_id,omitempty\"`\n",
-				)
-			}
+			builder.WriteString(
+				"\tEntityID string `json:\"entity_id\"`\n",
+			)
 
 			builder.WriteString("}\n\n")
+
 		}
 
-		funcName := domainPrefix + "Service"
+		funcName := "Service"
 
 		builder.WriteString(fmt.Sprintf("func %s(auth *rest.IMain, service %s, payload interface{}) (interface{}, error) {\n", funcName, typeName))
-		builder.WriteString(fmt.Sprintf("\treturn rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
+		builder.WriteString(fmt.Sprintf("\treturn rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainItem.Domain]))
 		builder.WriteString("}\n\n")
 
 		builder.WriteString(fmt.Sprintf("func %sX(auth *rest.IMain, service %s, payload interface{}) interface{} {\n", funcName, typeName))
-		builder.WriteString(fmt.Sprintf("\tcon, err := rest.PostService[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainName]))
-		builder.WriteString(fmt.Sprintf("\tif err != nil {panic(err)}\n"))
-		builder.WriteString("\treturn con\n")
+		builder.WriteString(fmt.Sprintf("\treturn rest.PostServiceX[interface{}](auth, string(%s), service.String(), payload)\n", domainConstNames[domainItem.Domain]))
 		builder.WriteString("}\n\n")
 
+		filePath := filepath.Join(domainPrefix, "SERVICE.go")
+		if err := os.WriteFile(filePath, []byte(builder.String()), 0755); err != nil {
+			return fmt.Errorf("failed to write file %s: %w", filePath, err)
+		}
+		fmt.Printf("Entity generated in %s\n", filePath)
 	}
 
-	if err := os.MkdirAll(auth.Id, 0755); err != nil {
+	err = os.Chdir("..")
+	if err != nil {
 		return err
 	}
-	filePath := filepath.Join(auth.Id, "hass_services.go")
-	if err := os.WriteFile(filePath, []byte(builder.String()), 0644); err != nil {
+	return nil
+}
+
+func generateDomainFile(auth *rest.IMain, services []rest.IAPIDomain) error {
+	fmt.Println("Generating service file...")
+
+	domainConstNames := make(map[string]string)
+
+	var builder strings.Builder
+
+	builder.WriteString("package " + auth.Id + "\n\n")
+
+	builder.WriteString("type Domain string\n\nconst (\n")
+
+	for _, domainItem := range services {
+		constName := upppreConver(domainItem.Domain)
+		domainConstNames[domainItem.Domain] = constName
+		builder.WriteString(fmt.Sprintf("\t%s Domain = %q\n", constName, domainItem.Domain))
+	}
+
+	builder.WriteString(")\n\n")
+	builder.WriteString("type Service interface {\n\tString() string\n}\n\n")
+
+	if err := os.WriteFile("domains.go", []byte(builder.String()), 0644); err != nil {
 		return err
 	}
-	fmt.Printf("Service file generated in %s\n", filePath)
+
+	fmt.Printf("Service file generated: %s\n", "domains.go")
+
 	return nil
 }
 
