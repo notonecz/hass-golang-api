@@ -4,7 +4,7 @@ import "github.com/notonecz/hass-golang-api/rest"
 
 func Generate(auth *rest.IMain) error {
 
-	err := generateServiceFile(auth)
+	err := generateServiceFiles(auth)
 	if err != nil {
 		return err
 	}
@@ -20,7 +20,7 @@ func Generate(auth *rest.IMain) error {
 
 func GenerateX(auth *rest.IMain) {
 
-	err := generateServiceFile(auth)
+	err := generateServiceFiles(auth)
 	if err != nil {
 		panic(err)
 	}

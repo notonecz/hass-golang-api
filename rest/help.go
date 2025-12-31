@@ -8,27 +8,14 @@ func HelpServices(auth *IMain) {
 		panic(err)
 	}
 
-	servicesList, ok := srvInterface.([]any)
-	if !ok {
-		panic("expected []any from GetServices")
-	}
+	for _, domainItem := range srvInterface {
+		fmt.Println("Domain:", domainItem.Domain)
 
-	for _, domainItem := range servicesList {
-		domainMap, ok := domainItem.(map[string]any)
-		if !ok {
-			continue
-		}
-
-		domainName, _ := domainMap["domain"].(string)
-		fmt.Println("Domain:", domainName)
-
-		services, ok := domainMap["services"].(map[string]any)
-		if !ok {
-			continue
-		}
-
-		for serviceName := range services {
+		for serviceName := range domainItem.Services {
 			fmt.Println("-", serviceName)
+			for fieldName := range serviceName {
+				fmt.Println("-->", fieldName)
+			}
 		}
 	}
 }
