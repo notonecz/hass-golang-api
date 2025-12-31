@@ -1,6 +1,6 @@
 
-# Home Assistant Golang API
-
+# Home Assistant Golang API 
+## !!! OUTDATED README !!! I will do it tomorrow.
 ## Generate hass-services
 
 ```go
