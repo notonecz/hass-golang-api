@@ -19,7 +19,7 @@ func main() {
 
 > [!IMPORTANT]
 > This only works if you have generated ServiceFiles (`hassGenerator.GenerateX(auth)`).
-> If you don't want to use ServiceFiles look [Here]([https://pages.github.com/](https://github.com/notonecz/hass-golang-api/main/README.md#use-api-without-servicefiles)).
+> If you don't want to use ServiceFiles look [Here](https://github.com/notonecz/hass-golang-api/blob/main/README.md#use-api-without-servicefiles).
 ### DOMAIN/SERIVCE api
 ```go
 import (
