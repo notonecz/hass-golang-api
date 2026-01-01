@@ -40,6 +40,8 @@ func generateServiceFiles(auth *rest.IMain) error {
 
 	for _, domainItem := range services {
 
+		afields := false
+
 		domainPrefix := upppreConver(domainItem.Domain)
 
 		err = os.Mkdir(domainPrefix, 0755)
@@ -72,6 +74,8 @@ func generateServiceFiles(auth *rest.IMain) error {
 
 		builder.WriteString(")\n\n")
 
+		generatedEnums := map[string]bool{}
+
 		for serviceName, service := range domainItem.Services {
 
 			payloadName := upppreConver(serviceName) + "Payload"
@@ -79,6 +83,16 @@ func generateServiceFiles(auth *rest.IMain) error {
 
 			for fieldName := range service.Fields {
 				if fieldName == "entity_id" {
+					continue
+				} else if fieldName == "advanced_fields" {
+					afields = true
+					goField := upppreConver(fieldName)
+					builder.WriteString(fmt.Sprintf(
+						"\t%s %s `json:\"%s,omitempty\"`\n",
+						goField,
+						"*Advanced"+upppreConver(serviceName)+"Payload",
+						fieldName,
+					))
 					continue
 				}
 				goField := upppreConver(fieldName)
@@ -93,8 +107,61 @@ func generateServiceFiles(auth *rest.IMain) error {
 			builder.WriteString(
 				"\tEntityID string `json:\"entity_id\"`\n",
 			)
-
 			builder.WriteString("}\n\n")
+
+			if afields {
+
+				var selectFields []string
+
+				ApayloadName := "Advanced" + upppreConver(serviceName) + "Payload"
+				builder.WriteString(fmt.Sprintf("type %s struct {\n", ApayloadName))
+
+				for fieldName := range service.Fields["advanced_fields"].Fields {
+
+					typeDef := "interface{}"
+
+					goField := upppreConver(fieldName)
+
+					if service.Fields["advanced_fields"].Fields[fieldName].Selector.Select != nil {
+						typeDef = "*I" + goField + "Select"
+						selectFields = append(selectFields, fieldName)
+					}
+
+					builder.WriteString(fmt.Sprintf(
+						"\t%s %s `json:\"%s,omitempty\"`\n",
+						goField,
+						typeDef,
+						fieldName,
+					))
+
+				}
+
+				builder.WriteString("}\n\n")
+
+				for _, selectFieldName := range selectFields {
+
+					tName := "I" + upppreConver(selectFieldName) + "Select"
+
+					if generatedEnums[tName] {
+						continue
+					}
+					generatedEnums[tName] = true
+
+					fmt.Println(generatedEnums)
+
+					builder.WriteString(fmt.Sprintf("type %s string\n\n", tName))
+					builder.WriteString(fmt.Sprintf("func (s %s) String() string { return string(s) }\n\n", tName))
+					builder.WriteString("const (\n")
+
+					for _, optionName := range service.Fields["advanced_fields"].Fields[selectFieldName].Selector.Select.Options {
+						baseConstName := upppreConver(optionName)
+						builder.WriteString(fmt.Sprintf("\t%s %s = %q\n", baseConstName, tName, optionName))
+					}
+
+					builder.WriteString(")\n\n")
+				}
+
+			}
 
 		}
 
@@ -123,7 +190,7 @@ func generateServiceFiles(auth *rest.IMain) error {
 }
 
 func generateDomainFile(auth *rest.IMain, services []rest.IAPIDomain) error {
-	fmt.Println("Generating service file...")
+	fmt.Println("Generating main service file...")
 
 	domainConstNames := make(map[string]string)
 
