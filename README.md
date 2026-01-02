@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/notonecz/hass-golang-api/refs/heads/main/assets/hass-beta0.5.svg" alt="drawing"></img>
+<img src="https://raw.githubusercontent.com/notonecz/hass-golang-api/refs/heads/main/assets/hass-beta0.5.png" alt="drawing"></img>
 ## Generate Service Files
 
 ```go
