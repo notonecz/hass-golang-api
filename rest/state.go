@@ -68,14 +68,6 @@ func GetServices(auth *IMain) ([]IAPIDomain, error) {
 	return comGet[[]IAPIDomain](auth, "api/services")
 }
 
-func GetCalendars(auth *IMain) (interface{}, error) {
-	return comGet[interface{}](auth, "api/calendars")
-}
-
-func GetErrorLog(auth *IMain) (interface{}, error) {
-	return comGet[interface{}](auth, "api/error_log")
-}
-
 func GetEvents(auth *IMain) (interface{}, error) {
 	return comGet[interface{}](auth, "api/events")
 }
