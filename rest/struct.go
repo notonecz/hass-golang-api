@@ -1,5 +1,11 @@
 package rest
 
+import (
+	"net/url"
+	"strings"
+	"time"
+)
+
 type Entity[T any] struct {
 	EntityID   string `json:"entity_id"`
 	State      string `json:"state"`
@@ -87,4 +93,48 @@ type IAPISelectorSelect struct {
 	Sort           bool     `json:"sort,omitempty"`
 	Multiple       bool     `json:"multiple,omitempty"`
 	CustomValue    bool     `json:"custom_value,omitempty"`
+}
+
+type IAPIEvent struct {
+	Event         string `json:"event"`
+	ListenerCount int    `json:"listener_count"`
+}
+
+type IAPIHistoryPayload struct {
+	EndTime         time.Time
+	FilterEntityId  []string
+	MinimalResponse bool
+}
+
+type HistoryResponse [][]IAPIHistoryEntry
+
+type IAPIHistoryEntry struct {
+	EntityID    string            `json:"entity_id,omitempty"`
+	State       string            `json:"state"`
+	LastChanged time.Time         `json:"last_changed"`
+	LastUpdated time.Time         `json:"last_updated,omitempty"`
+	Attributes  map[string]string `json:"attributes,omitempty"`
+}
+
+func (p IAPIHistoryPayload) ToQuery() url.Values {
+	q := url.Values{}
+
+	if p.EndTime != time.Date(1, 1, 1, 0, 0, 0, 0, time.UTC) {
+		timeStr := p.EndTime.Format("2006-01-02T15:04:05")
+		q.Add("end_time", timeStr)
+	}
+
+	if len(p.FilterEntityId) > 0 {
+		q.Add("filter_entity_id", strings.Join(p.FilterEntityId, ","))
+	}
+
+	if p.MinimalResponse {
+		q.Add("minimal_response", "")
+	}
+
+	return q
+}
+
+type QueryEncoder interface {
+	ToQuery() url.Values
 }

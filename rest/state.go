@@ -1,5 +1,7 @@
 package rest
 
+import "time"
+
 // DELETE
 
 func DeleteState[T any](auth *IMain, entity string) (T, error) {
@@ -46,11 +48,14 @@ func PostTemplate[T any](auth *IMain, payload string) (T, error) {
 
 // GET
 
+func GetHistory(auth *IMain, timestemp time.Time, payload QueryEncoder) ([][]IAPIHistoryEntry, error) {
+	timeStr := timestemp.Format("2006-01-02T15:04:05")
+	return comGetP[[][]IAPIHistoryEntry](auth, "api/history/period/"+timeStr, payload)
+}
+
 func GetState[T any](auth *IMain, entity string) (T, error) {
 	return comGet[T](auth, "api/states/"+entity)
 }
-
-// GET
 
 func GetStateX[T any](auth *IMain, entity string) T {
 	res, err := GetState[T](auth, entity)
@@ -68,14 +73,14 @@ func GetServices(auth *IMain) ([]IAPIDomain, error) {
 	return comGet[[]IAPIDomain](auth, "api/services")
 }
 
-func GetCalendars(auth *IMain) (interface{}, error) {
-	return comGet[interface{}](auth, "api/calendars")
+func GetEvents(auth *IMain) ([]IAPIEvent, error) {
+	return comGet[[]IAPIEvent](auth, "api/events")
 }
 
-func GetErrorLog(auth *IMain) (interface{}, error) {
-	return comGet[interface{}](auth, "api/error_log")
-}
-
-func GetEvents(auth *IMain) (interface{}, error) {
-	return comGet[interface{}](auth, "api/events")
+func GetEventsX(auth *IMain) []IAPIEvent {
+	res, err := comGet[[]IAPIEvent](auth, "api/events")
+	if err != nil {
+		panic(err)
+	}
+	return res
 }

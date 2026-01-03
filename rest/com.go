@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 type IMain struct {
@@ -25,21 +26,38 @@ func Init(id string, token string, ip string, secure bool) *IMain {
 }
 
 func getProtocol(secure bool) string {
-	switch secure {
-	case true:
+	if secure {
 		return "https"
-	case false:
+	} else {
 		return "http"
 	}
-	return "http"
 }
 
 func comGet[T any](auth *IMain, endpoint string) (T, error) {
 	var result T
 
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+	sprintf := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, sprintf, nil)
+	if err != nil {
+		return result, err
+	}
+
+	return com[T](req, auth.token)
+}
+
+func comGetP[T any, P QueryEncoder](auth *IMain, endpoint string, payload P) (T, error) {
+	var result T
+
+	u := url.URL{
+		Scheme: getProtocol(auth.secure),
+		Host:   auth.ip,
+		Path:   endpoint,
+	}
+
+	u.RawQuery = payload.ToQuery().Encode()
+
+	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
 	if err != nil {
 		return result, err
 	}
@@ -50,9 +68,9 @@ func comGet[T any](auth *IMain, endpoint string) (T, error) {
 func comDelete[T any](auth *IMain, endpoint string) (T, error) {
 	var result T
 
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+	sprintf := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequest(http.MethodDelete, sprintf, nil)
 	if err != nil {
 		return result, err
 	}
@@ -62,9 +80,9 @@ func comDelete[T any](auth *IMain, endpoint string) (T, error) {
 
 func comPost[T any](auth *IMain, endpoint string, payload string) (T, error) {
 	var result T
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+	sprintf := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer([]byte(payload)))
+	req, err := http.NewRequest(http.MethodPost, sprintf, bytes.NewBuffer([]byte(payload)))
 	if err != nil {
 		return result, err
 	}
@@ -75,14 +93,14 @@ func comPost[T any](auth *IMain, endpoint string, payload string) (T, error) {
 func IcomPost[T any](auth *IMain, endpoint string, payload interface{}) (T, error) {
 	var resultdef T
 
-	url := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
+	sprintf := fmt.Sprintf("%s://%s/%s", getProtocol(auth.secure), auth.ip, endpoint)
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return resultdef, err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewReader(jsonData))
+	req, err := http.NewRequest(http.MethodPost, sprintf, bytes.NewReader(jsonData))
 	if err != nil {
 		return resultdef, err
 	}
